@@ -71,13 +71,13 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = './../models/lagarto-with-AI.glb';
+        const url = '/game_mvp_deploy/models/lagarto-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTower(position, color, callback) {
-        const url = './../models/tower.glb';
+        const url = '/game_mvp_deploy/models/tower.glb';
         const rotation = new THREE.Vector3(1, 0, 0);
         const scale = 1;
         this.loadModel(url, position, rotation, scale, color, callback);
@@ -89,7 +89,7 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTerrain(callback) {
-        const url = './../models/terrain.glb';
+        const url = '/game_mvp_deploy/models/terrain.glb';
         const position = new THREE.Vector3(0, 0, 0);
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 2;
