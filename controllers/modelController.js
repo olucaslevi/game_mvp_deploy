@@ -71,13 +71,13 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = '/game_mvp_deploy/models/lagarto-with-AI.glb';
+        const url = 'https://olucaslevi.github.io/game_mvp_deploy/models/lagarto-with-AI.glb'
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTower(position, color, callback) {
-        const url = '/game_mvp_deploy/models/tower.glb'
+        const url = 'https://olucaslevi.github.io/game_mvp_deploy/models/towers.glb'
         const rotation = new THREE.Vector3(1, 0, 0);
         const scale = 1;
         this.loadModel(url, position, rotation, scale, color, callback);
@@ -102,13 +102,13 @@ class ModelController {
     //     this.loadModel(url, position, rotation, scale, color, callback);
     // }
     createWarrior(position, callback) {
-        const url = '/game_mvp_deploy/models/warrior-with-AI.glb';
+        const url = 'https://olucaslevi.github.io/game_mvp_deploy/models/warrior-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createArcher(position, callback) {
-        const url = '/game_mvp_deploy/modelsarcher-with-AI.glb';
+        const url = 'https://olucaslevi.github.io/game_mvp_deploy/models/archer-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
