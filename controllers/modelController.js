@@ -72,7 +72,7 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = './models/AI/lagarto-with-AI.glb';
+        const url = './models/AI/lagarto.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
@@ -97,13 +97,13 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createWarrior(position, callback) {
-        const url = './../models/AI/warrior-with-AI.glb';
+        const url = './models/AI/warrior.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createArcher(position, callback) {
-        const url = './models/AI/archer-with-AI.glb';
+        const url = './models/AI/archer.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
