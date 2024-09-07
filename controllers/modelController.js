@@ -34,7 +34,8 @@ class ModelController {
                 if (callback) callback(model);
             },
         );
-    }playAnimation(model, animationName, speed = 1, duration = 1) {
+    }
+    playAnimation(model, animationName, speed = 1, duration = 1) {
         if (!model || !model.userData.mixer) {
             return;
         }
@@ -71,13 +72,13 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = './game_mvp_deploy/models/lagarto-with-AI.glb';
+        const url = './models/AI/lagarto-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTower(position, color, callback) {
-        const url = './game_mvp_deploy/models/tower.glb';
+        const url = './models/tower.glb';
         const rotation = new THREE.Vector3(1, 0, 0);
         const scale = 1;
         this.loadModel(url, position, rotation, scale, color, callback);
@@ -89,26 +90,20 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTerrain(callback) {
-        const url = './../game_mvp_deploy/models/terrain.glb';
+        const url = './models/terrain.glb';
         const position = new THREE.Vector3(0, 0, 0);
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 2;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
-    // createPlayer(position, color, callback) {
-    //     const url = './../models/warrior-with-AI.glb';
-    //     const rotation = new THREE.Vector3(0, 0, 0);
-    //     const scale = 0.06;
-    //     this.loadModel(url, position, rotation, scale, color, callback);
-    // }
     createWarrior(position, callback) {
-        const url = './../game_mvp_deploy/models/warrior-with-AI.glb';
+        const url = './models/AI/warrior-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createArcher(position, callback) {
-        const url = './../game_mvp_deploy/models/archer-with-AI.glb';
+        const url = './models/AI/archer-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
@@ -128,6 +123,30 @@ class ModelController {
             return 0;
         }
     }
+    switchModel(currentModel, newUrl, callback) {
+        // Remove o modelo atual da cena
+        if (currentModel) {
+            this.scene.remove(currentModel);
+        }
+    
+        // Carrega o novo modelo
+        this.loadModel(newUrl, currentModel.position, currentModel.rotation, currentModel.scale.x, null, (newModel) => {
+            // Define o novo modelo como ativo
+            newModel.position.copy(currentModel.position);
+            newModel.rotation.copy(currentModel.rotation);
+            newModel.scale.copy(currentModel.scale);
+    
+            // Adiciona o novo modelo na cena
+            this.scene.add(newModel);
+    
+            // Toca a animação "Walk" no novo modelo
+            this.playAnimation(newModel, 'Walk', 1, 2); // Inicia a animação "Walk"
+    
+            // Chama o callback para atualizar a referência do modelo
+            if (callback) callback(newModel);
+        });
+    }
+    
     update(delta) {
         this.scene.children.forEach(child => {
             if (child.userData.mixer) {

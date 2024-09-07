@@ -137,6 +137,14 @@ button:hover::before {
     pointer-events: none;
     opacity: 0.8;
 }
+#target-indicator {
+    font-size: 20px;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    margin: 40px auto 0;
+    pointer-events: none;
+    opacity: 0.8;
+}
 
 #health-bar-container {
     width: 400px;

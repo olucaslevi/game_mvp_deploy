@@ -22,6 +22,7 @@ class Player {
         this.attackRange = 2;
         this.target = null;
         this.cooldown = 50;
+        this.currentModelState = 'AI';
         this.lastIndicatorTime = 0;
         this.debounceTime = 800;
         this.healthBarManager = new HealthBarManager(this, camera, renderer);
@@ -100,7 +101,7 @@ class Player {
         }
         new DamageIndicator(this.scene, this.mesh.position, damage);
         if (this.model) {
-            this.modelController.playAnimation(this.model, 'Hit', 2, 2);
+            this.modelController.playAnimation(this.model, 'Hit', 0.3, 0.5);
             setTimeout(() => {
                 this.modelController.playAnimation(this.model, 'Idle', 10, 7);
             }, 100);
@@ -117,6 +118,7 @@ class Player {
         if (distance <= this.attackRange+5) {
             target.takeDamage(this.damage);
             this.isAttacking = true;
+            this.modelController.stopAnimation(this.model,'Walk');
             this.modelController.playAnimation(this.model, 'Attack',1,2);
         } else {
             this.isAttacking = false;
@@ -205,9 +207,18 @@ class Player {
         return this.team;
     }
     setTarget(target) {
+        const targetIndicator = document.getElementById('target-indicator');
+    
         if (target && target.isAlive() && target.getTeam() !== this.team) {
             this.target = target;
             this.lookAtTarget(target);
+    
+            // Atualiza o indicador de target na GUI
+            targetIndicator.textContent = `Target: ${target.name || 'Desconhecido'}`;
+    
+            // Muda a cor do target para indicar que foi selecionado
+            this.highlightTarget(target);
+    
             const distanceToTarget = this.mesh.position.distanceTo(target.position);
             if (distanceToTarget > this.attackRange) {
                 this.targetPosition = target.position.clone();
@@ -215,10 +226,42 @@ class Player {
                 this.targetPosition = null;
             }
         } else {
+            // Se o target for nulo ou inválido
+            this.removeHighlightFromTarget(); // Remove o destaque do target anterior
             this.target = null;
             this.targetPosition = null;
+            targetIndicator.textContent = "Target: Nenhum"; // Reseta o indicador de target
         }
     }
+    
+    highlightTarget(target) {
+        if (target && target.model) {
+            target.model.traverse((child) => {
+                if (child.isMesh) {
+                    // Armazena a cor original do material
+                    child.userData.originalColor = child.material.color.getHex();
+    
+                    // Define a cor para um amarelo mais forte
+                    child.material.color.setHex(0xFFFF00); // Amarelo forte e chapado
+                    child.material.emissive = new THREE.Color(0xFFFF00); // Emissivo em amarelo para maior brilho
+                    child.material.emissiveIntensity = 0.8; // Ajuste de intensidade para destacar o brilho
+                }
+            });
+        }
+    }
+    removeHighlightFromTarget() {
+        if (this.target && this.target.model) {
+            this.target.model.traverse((child) => {
+                if (child.isMesh && child.userData.originalColor !== undefined) {
+                    child.material.color.setHex(child.userData.originalColor); // Restaura a cor original
+                    child.material.emissive = new THREE.Color(0x000000); // Remove o efeito emissivo
+                    child.material.emissiveIntensity = 0; // Remove a intensidade emissiva
+                    delete child.userData.originalColor; // Remove o dado de usuário
+                }
+            });
+        }
+    }
+    
     getTarget() {
         return this.target ? this.target.position.clone() : null;
     }
@@ -237,7 +280,7 @@ class Player {
 class Warrior extends Player {
     constructor(scene, position, camera, renderer, team) {
         super(scene, position, camera, renderer, team);
-        this.attackRange = 2;
+        this.attackRange = 8;
         this.damage = 20;
         this.modelController = new ModelController(this.scene)
         this.modelController.createWarrior(this.position,(model) => {
@@ -270,12 +313,13 @@ class Archer extends Player {
         this.attackRange = 26;
         this.damage = 12;
         this.projectiles = [];
-        this.modelController = new ModelController(this.scene)
-        this.modelController.createArcher(this.position,(model) => {
+        this.modelController = new ModelController(this.scene);
+        this.modelController.createArcher(this.position, (model) => {
             this.model = model;
             this.modelController.playAnimation(this.model, 'Idle', 10, 7);
         });
     }
+
     attack(target) {
         if (this.cooldown > 0 || target.getTeam() === this.team || this.isAttacking) {
             this.isAttacking = false;
@@ -296,44 +340,44 @@ class Archer extends Player {
         }
         this.cooldown = 60;
     }
+
     shootArrow(target) {
-        const arrowTexture = new THREE.TextureLoader().load('./../arrow.png');
+        // Cria a geometria da flecha
+        const arrowGeometry = new THREE.CylinderGeometry(0.1, 0.3, 4, 12);
     
-        // Aumente o tamanho da flecha ajustando a geometria
-        const arrowGeometry = new THREE.CylinderGeometry(0.3, 0.8, 3, 12); // Aumente o comprimento e o diâmetro
-    
-        // Ajuste o material para um visual mais brilhante ou emissivo
-        const arrowMaterial = new THREE.MeshPhongMaterial({
-            map: arrowTexture,
-            color: 0xffa500, // Use uma cor vibrante como laranja
-            emissive: 0xffa500, // Adicione uma cor emissiva para destacar
-            emissiveIntensity: 3, // Intensidade emissiva
-            shininess: 100, // Mais brilho
-            transparent: true,
-            side: THREE.DoubleSide,
-            depthTest: false, // Desabilita o teste de profundidade para sempre renderizar a flecha em cima
-            depthWrite: false  // Desabilita a escrita de profundidade para garantir que ela não afete a renderização de outros objetos
+        // Cria o material da flecha com configuração ajustada
+        const arrowMaterial = new THREE.MeshBasicMaterial({
+            color: 'yellow', // Cor marrom
+            transparent: true, // Permite a transparência se necessário
+            opacity: 0.8, // Totalmente opaco
+            depthTest: true, // Habilita o teste de profundidade
+            depthWrite: true, // Habilita a escrita de profundidade
         });
     
         const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-        
-        // Aumente a altura da flecha
-        arrow.position.copy(this.mesh.position);
-        arrow.position.y += 1; // Ajuste o valor conforme necessário para posicionar a flecha mais acima
     
-        // Defina a direção da flecha
+        // Defina um renderOrder alto para garantir que a flecha seja renderizada depois do terreno
+        arrow.renderOrder = 10; // Defina um valor alto para garantir que a flecha seja renderizada por último
+    
+        // Ajuste a posição da flecha
+        arrow.position.copy(this.mesh.position);
+        arrow.position.y += 1; // Eleve a flecha acima da posição inicial
+    
+        // Define a direção da flecha
         const arrowDirection = new THREE.Vector3().subVectors(target.getPosition(), this.mesh.position).normalize();
         const axis = new THREE.Vector3(0, 1, 0);
         const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, arrowDirection);
         arrow.applyQuaternion(quaternion);
     
+        // Adiciona a flecha na cena
         this.scene.add(arrow);
         this.projectiles.push(arrow);
     
         // Armazene dados de usuário para manipulação da flecha
-        arrow.userData = { target, direction: arrowDirection, speed: 0.5 }; // Aumente a velocidade se necessário
+        arrow.userData = { target, direction: arrowDirection, speed: 0.5 };
     }
     
+
     updateProjectiles() {
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const arrow = this.projectiles[i];
@@ -350,7 +394,17 @@ class Archer extends Player {
             }
         }
     }
+
     update(delta) {
+        if (this.target) {
+            if (!this.target.isAlive()) {
+                this.removeHighlightFromTarget(); // Remove destaque se o target morrer
+                this.target = null;
+                // Atualiza a GUI
+                const targetIndicator = document.getElementById('target-indicator');
+                targetIndicator.textContent = "Target: Nenhum";
+            }
+        }
         if (this.model && this.modelController) {
             this.modelController.update(delta);
         }
@@ -358,4 +412,6 @@ class Archer extends Player {
         this.updateProjectiles();
     }
 }
+
+
 export { Player, Warrior, Archer };

@@ -1,4 +1,5 @@
 
+import { Warrior, Archer, Player } from './../controllers/Player';
 class GameGUI {
     constructor(player,gameInstance) {
         this.player = player;
@@ -21,7 +22,51 @@ class GameGUI {
     }
     event() {
         console.log("Clicou...");
+    
+        // Obtenha a referência ao jogador atual
+        const player = this.gameInstance.getCurrentPlayer();
+    
+        // Verifica o estado atual do modelo do jogador e alterna entre os URLs
+        let newUrl;
+        if (player.currentModelState === 'AI') {
+            if (player instanceof Warrior) {
+                newUrl = './models/no-AI/warrior-without-AI.glb';
+            } else if (player instanceof Archer) {
+                newUrl = './models/no-AI/archer-without-AI.glb';
+            }
+            player.currentModelState = 'no-AI'; // Atualiza o estado para 'no-AI'
+        } else {
+            if (player instanceof Warrior) {
+                newUrl = './models/AI/warrior-with-AI.glb';
+            } else if (player instanceof Archer) {
+                newUrl = './models/AI/archer-with-AI.glb';
+            }
+            player.currentModelState = 'AI'; // Atualiza o estado para 'AI'
+        }
+    
+        // Troca o modelo do jogador e inicia a animação "Walk"
+        this.gameInstance.modelController.switchModel(player.model, newUrl, (newModel) => {
+            player.model = newModel; // Atualiza o modelo do jogador
+        });
+    
+        // Alterna o modelo dos soldados e inicia a animação "Walk"
+        this.gameInstance.soldiers.forEach(soldier => {
+            let newSoldierUrl;
+            if (soldier.currentModelState === 'AI') {
+                newSoldierUrl = './models/no-AI/lagarto-without-AI.glb';
+                soldier.currentModelState = 'no-AI'; // Atualiza o estado para 'no-AI'
+            } else {
+                newSoldierUrl = './models/AI/lagarto-with-AI.glb';
+                soldier.currentModelState = 'AI'; // Atualiza o estado para 'AI'
+            }
+    
+            this.gameInstance.modelController.switchModel(soldier.model, newSoldierUrl, (newModel) => {
+                soldier.model = newModel; // Atualiza o modelo do soldado
+            });
+        });
     }
+    
+    
     update() {
         this.healthBar.style.width = `${this.player.healthPoints}%`;
     }    

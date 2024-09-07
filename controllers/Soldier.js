@@ -24,6 +24,7 @@ class Soldier {
         this.healthBarManager = new HealthBarManager(this, this.scene, this.scene);
         this.model = null;
         this.isDead = false;
+        this.currentModelState = 'AI';
         this.modelController = new ModelController(this.scene);
         this.modelController.createSoldier(this.position, this.team, model => {
             this.model = model;
@@ -45,6 +46,11 @@ class Soldier {
         this.healthBarManager.update();
         this.applySeparationForce(soldiers);
         this.updateModelPosition();
+        if (this.health <= 0 && !this.isDead) {
+            this.isDead = true;
+            this.onDeath();
+            return; // Interrompe a atualização se o soldado acabou de morrer
+        }
 
         let playerInRadius = this.findPlayerInRadius(players);
         if (playerInRadius) {
@@ -228,16 +234,24 @@ class Soldier {
         this.healthPoints -= amount;
         this.healthBarManager.update();
         new DamageIndicator(this.scene, this.position, amount);
-        this.handleDamageEffect()
+        this.handleDamageEffect();
+    
         if (this.healthPoints <= 0) {
             this.die();
+            return;
         }
-        if (this.healthPoints > 0) {
-            this.modelController.playAnimation(this.model, 'Hit', 1, 2); // ? Animação OK
-        } else {
-            this.die();
-        }
+    
+        // Tocar a animação de hit
+        this.modelController.playAnimation(this.model, 'Hit', 1, 2); 
+    
+        // Espera um tempo para tocar a animação de hit e depois volta para a animação de caminhada
+        setTimeout(() => {
+            if (this.isAlive()) { // Verifica se o soldado ainda está vivo
+                this.modelController.playAnimation(this.model, 'Walk', 1, 1);
+            }
+        }, 500); // 500ms é o tempo da animação de hit, ajuste conforme necessário
     }
+    
     onDeath() {
         console.log(`Soldier from team ${this.team} died.`);
         console.log(`Game GUI: ${this.gameGUI}`); // Verifica se gameGUI está definido

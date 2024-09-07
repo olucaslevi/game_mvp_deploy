@@ -6,6 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "deploy": "gh-pages -d dist"
+    ,
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
