@@ -72,7 +72,7 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = './models/AI/lagarto.glb';
+        const url = './models/lagarto.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
@@ -84,10 +84,10 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createProjectile(position, color, callback) {
-        const url = './../banana.glb';
-        const rotation = new THREE.Vector3(0, 0, 0);
-        const scale = 0.8;
-        this.loadModel(url, position, rotation, scale, color, callback);
+        // const url = './../banana.glb';
+        // const rotation = new THREE.Vector3(0, 0, 0);
+        // const scale = 0.8;
+        // this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTerrain(callback) {
         const url = './models/terrain.glb';
@@ -97,13 +97,13 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createWarrior(position, callback) {
-        const url = './models/AI/warrior.glb';
+        const url = './models/warrior.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createArcher(position, callback) {
-        const url = './models/AI/archer.glb';
+        const url = './models/archer.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
