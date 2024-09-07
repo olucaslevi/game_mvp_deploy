@@ -97,7 +97,7 @@ class ModelController {
         this.loadModel(url, position, rotation, scale, null, callback);
     }
     createWarrior(position, callback) {
-        const url = './models/AI/warrior-with-AI.glb';
+        const url = './../models/AI/warrior-with-AI.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, null, callback);
