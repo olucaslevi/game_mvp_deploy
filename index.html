@@ -3,29 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game</title>
-  <script type="module" crossorigin src="/game_mvp_deploy/assets/index-DlboytRx.js"></script>
-  <link rel="stylesheet" crossorigin href="/game_mvp_deploy/assets/index-CXOhIwuk.css">
+    <title>Protótipo de Jogo</title>
+  <script type="module" crossorigin src="/game_mvp_deploy/assets/index-l4D8PTtY.js"></script>
+  <link rel="stylesheet" crossorigin href="/game_mvp_deploy/assets/index-7oSZbgvQ.css">
 </head>
 <body>
-    <!-- Tela de início -->
-    <div id="start-screen" class="overlay">
-        <h1>Bem Vindo !!</h1>
-        <h3>As torres gerarão tropas. Divirta-se ! Caso haja qualquer problema em visualizar este protótipo jogável, você pode ver a demonstração das animações aqui: 
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">link</a> 
-        </h3>
-        <p>
-            Clique no mapa para movimentar seu jogador e nos inimigos para atacá-los. Você poderá visualizar as animações desenvolvidas abaixo. 
-            <br/>Não esqueça de clicar neste 
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">formulário</a> 
-            para preencher com base na sua experiência com esse protótipo.
-        </p>
-        <div>Escolha uma especialidade:</div>
-        <button id="warrior-button">Guerreiro</button>
-        <button id="archer-button">Arqueiro</button>
-        <div id="error-message" style="color: red; display: none;">Você deve escolher uma classe!</div>
-        <button id="start-button">Começar</button>
-    </div>
+<!-- Tela de início -->
+<div id="start-screen" class="overlay">
+    <h1>Bem Vindo.</h1>
+    <h3>As torres gerarão tropas. Você pode clicar no terreno para onde o personagem deve ir,<br/> ou pode clicar, segurar e arrastar para guiar o personagem com o mouse. <br/><br/>
+        Inimigos irão ataca-lo como prioridade, cuidado. Mas suas torres também gerarão aliados. <br/>
+        Divirta-se<br/>
+    </h3>
+    <p>
+        <br/>Não esqueça de clicar neste 
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">formulário</a> <br/>
+        Você deve preenche-lo com base na sua experiência aqui. <br/>
+        Muito Obrigado ! <br/>
+    </p>
+    <br/>
+    <div>Escolha uma especialidade:</div>
+    <button id="warrior-button">Guerreiro</button>
+    <button id="archer-button">Arqueiro</button>
+    <div>Escolha o tipo de modelo:</div>
+    <button id="ai-model-button">Modelo IA</button>
+    <button id="manual-model-button">Modelo Manual</button>
+    <div id="error-message" style="color: red; display: none;">Você deve escolher uma classe e o tipo de modelo!</div>
+    <button id="start-button">Começar</button>
+</div>
+
     <!-- Tela de fim de jogo -->
     <div id="end-screen" class="overlay">
         <h1>Game Over</h1>
@@ -40,6 +46,7 @@
         </div>    
         <div id="timer">03:00</div>    
         <div id="target-indicator">Target: Nenhum</div>
+        <div id="warning">Pressione C para alternar para câmera em primeira pessoa !</div>
         <div id="health-bar-container">
             <div id="health-bar"></div>
         </div>
