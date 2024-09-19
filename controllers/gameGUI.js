@@ -16,62 +16,64 @@ class GameGUI {
         this.redTeamKills = 0;
     }
     initEvents() {
-        document.getElementById('button').addEventListener('click', () => {
+        const debounceEvent = (func, delay) => {
+            let timeout;
+            return function (...args) {
+                if (timeout) {
+                    return;
+                }
+                timeout = setTimeout(() => {
+                    func.apply(this, args);
+                    timeout = null;
+                }, delay);
+            };
+        };
+        document.getElementById('button').addEventListener('click', debounceEvent(() => {
             this.event();
-        });
+        }, 5000));
     }
     event() {
-        console.log("Clicou...");
-    
-        // Obtenha a referência ao jogador atual
         const player = this.gameInstance.getCurrentPlayer();
-    
-        // Verifica o estado atual do modelo do jogador e alterna entre os URLs
         let newUrl;
         if (player.currentModelState === 'AI') {
             if (player instanceof Warrior) {
-                newUrl = './models/no-AI/warrior-without-AI.glb';
+                newUrl = './models/warrior.glb';
             } else if (player instanceof Archer) {
-                newUrl = './models/no-AI/archer-without-AI.glb';
+                newUrl = './models/archer.glb';
             }
-            player.currentModelState = 'no-AI'; // Atualiza o estado para 'no-AI'
+            player.currentModelState = 'no-AI';
         } else {
             if (player instanceof Warrior) {
-                newUrl = './models/AI/warrior-with-AI.glb';
+                newUrl = './models/warriorManual.glb';
             } else if (player instanceof Archer) {
-                newUrl = './models/AI/archer-with-AI.glb';
+                newUrl = './models/archerManual.glb';
             }
-            player.currentModelState = 'AI'; // Atualiza o estado para 'AI'
+            player.currentModelState = 'AI';
         }
-    
-        // Troca o modelo do jogador e inicia a animação "Walk"
         this.gameInstance.modelController.switchModel(player.model, newUrl, (newModel) => {
-            player.model = newModel; // Atualiza o modelo do jogador
+            player.model = newModel;
         });
-    
-        // Alterna o modelo dos soldados e inicia a animação "Walk"
         this.gameInstance.soldiers.forEach(soldier => {
+            if (!soldier.isAlive() || soldier.isDead) return;
+    
             let newSoldierUrl;
             if (soldier.currentModelState === 'AI') {
-                newSoldierUrl = './models/no-AI/lagarto-without-AI.glb';
-                soldier.currentModelState = 'no-AI'; // Atualiza o estado para 'no-AI'
+                newSoldierUrl = './models/lagarto.glb';
+                soldier.currentModelState = 'no-AI';
             } else {
-                newSoldierUrl = './models/AI/lagarto-with-AI.glb';
-                soldier.currentModelState = 'AI'; // Atualiza o estado para 'AI'
+                newSoldierUrl = './models/lagartoManual.glb';
+                soldier.currentModelState = 'AI';
             }
     
             this.gameInstance.modelController.switchModel(soldier.model, newSoldierUrl, (newModel) => {
-                soldier.model = newModel; // Atualiza o modelo do soldado
+                soldier.model = newModel;
             });
         });
     }
-    
-    
     update() {
         this.healthBar.style.width = `${this.player.healthPoints}%`;
     }    
     updateKillCount(team) {
-        console.log(`Updating kill count for team: ${team}`);
     
         if (team === 'blue') {
             this.blueTeamKills++;
@@ -85,7 +87,6 @@ class GameGUI {
             }
         }
     }
-    
     startTimer() {
         if (this.timerInterval) {
             return;

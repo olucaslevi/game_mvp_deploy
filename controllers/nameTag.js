@@ -30,12 +30,10 @@ class NameTag {
         });
         this.sprite = new THREE.Sprite(material);
         this.sprite.scale.set(10, 5, 1);
-        // Garante que o NameTag esteja sempre em primeiro plano
         this.sprite.renderOrder = 2;
-        // Verifique se o objeto e sua posição estão definidos
         if (this.object && this.object.position) {
             this.sprite.position.copy(this.object.position);
-            this.sprite.position.y -= 3; // Posição acima do objeto
+            this.sprite.position.y -= 3;
         }
         this.scene.add(this.sprite);
     }

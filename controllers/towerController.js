@@ -6,12 +6,13 @@ import { DamageIndicator } from './damageIndicator';
 import NameTag from './nameTag';
 import Soldier from './Soldier';
 class Tower {
-    constructor(scene, position, attackRadius = 20, cooldown = 1000, healthPoints = 100, damage = 1, camera, team, gameGUI) {
+    constructor(scene, position, attackRadius = 20, cooldown = 1000, healthPoints = 500, damage = 1, camera, team, gameGUI,modelType) {
         this.scene = scene;
         this.position = position;
         this.attackRadius = attackRadius;
         this.cooldown = cooldown;
         this.cooldownCounter = 0;
+        this.modelType = modelType;
         this.healthPoints = healthPoints;   
         this.damage = damage;
         this.projectiles = [];
@@ -21,16 +22,15 @@ class Tower {
         this.createTowerMesh();
         this.healthBarManager = new HealthBarManager(this, camera, scene);
         this.model = null;
-        this.modelController = new ModelController(this.scene);
+        this.modelController = new ModelController(this.scene, this.modelType);
         this.modelController.createTower(this.position, this.team, model => {
             this.model = model;
         });
         this.name = "Torre";
         this.nameTag = new NameTag(scene, this.mesh, this.name);
-        this.soldierSpawnTimer = this.getRandomSpawnInterval(); // Definido em segundos
+        this.soldierSpawnTimer = this.getRandomSpawnInterval();
         this.spawnedSoldierCount = 0
     }
-
     createTowerMesh() {
         const geometry = new THREE.BoxGeometry(6, 5, 14);
         const material = new THREE.MeshBasicMaterial({ opacity: 0, transparent: true, depthWrite: false });
@@ -39,18 +39,16 @@ class Tower {
         this.scene.add(this.mesh);
 
     }
-
     shoot(target, damage) {
         if (!target.isAlive()) {
             return;
         }
         if (target.getTeam() === this.team) {
-            return; // Não atira em alvos do mesmo time
+            return;
         }
         const projectile = new Projectile(this.scene, this.position, target, 0.2, this.team, damage);
         this.projectiles.push(projectile);
     }
-    
     update(player, soldiers, towers) {
         if (this.cooldownCounter > 0) {
             this.cooldownCounter--;
@@ -82,20 +80,15 @@ class Tower {
         this.projectiles = this.projectiles.filter(projectile => !projectile.update(player, aliveSoldiers, towers));
         this.healthBarManager.update();
     }
-    
     spawnSoldierIfNeeded(soldiers) {
-        if (this.isDestroyed) return; // Não gera soldados se a torre está destruída
-
-        // Verifica se o temporizador de spawn chegou a 0 e se o limite de soldados gerados não foi atingido
+        if (this.isDestroyed) return;
         if (this.soldierSpawnTimer <= 0 && this.spawnedSoldierCount < 8) {
-            this.createSoldier(soldiers); // Cria um soldado e adiciona à lista
-            console.log(`Torre (${this.team}) gerou um soldado. Total gerado: ${this.spawnedSoldierCount}`);
-            this.soldierSpawnTimer = this.getRandomSpawnInterval(); // Reinicia o temporizador para o próximo spawn
+            this.createSoldier(soldiers);
+            this.soldierSpawnTimer = this.getRandomSpawnInterval();
         } else {
-            this.soldierSpawnTimer -= 1 / 60; // Decrementa o temporizador com base na taxa de quadros (1/60 por frame = 1 segundo)
+            this.soldierSpawnTimer -= 1 / 60;
         }
     }
-
     createSoldier(soldiers) {
         const health = Math.floor(Math.random() * (30 - 10) + 80);
         const damage = Math.floor(Math.random() * (28 - 12) + 12);
@@ -105,16 +98,15 @@ class Tower {
         position.y += (Math.random() * 10 - 5);
         position.z = 0;
 
-        const soldier = new Soldier(this.scene, position, null, 2, 12, speed, 100, health, damage, this.team, this.gameGUI);
-        soldiers.push(soldier); // Adiciona o novo soldado à lista de soldados
-        this.spawnedSoldierCount++; // Incrementa o contador de soldados gerados
+        const soldier = new Soldier(this.scene, position, null, 2, 12, speed, 100, health, damage, this.team, this.gameGUI,this.modelType);
+        soldiers.push(soldier);
+        this.spawnedSoldierCount++;
     }
-
     getRandomSpawnInterval() {
-        return Math.floor(Math.random() * (15 - 3) + 3); // Retorna um intervalo aleatório entre 3 e 15 segundos
+        return Math.floor(Math.random() * (15 - 3) + 3);
     }
     takeDamage(damage) {
-        if (this.isDestroyed) return; // Evita que a torre receba dano após ser destruída
+        if (this.isDestroyed) return;
     
         this.healthPoints -= damage;
         if (this.healthPoints <= 0) {
@@ -126,51 +118,40 @@ class Tower {
             this.healthBarManager.update();
         }
     }
-    
     getDamage() {
         return this.damage;
     }
-
     getPosition() {
         return this.mesh.position.clone();
     }
-
     getTeam() {
         return this.team;
     }
-
     isAlive() {
         return this.healthPoints > 0;
     }
-
     setPosition(position) {
         this.position = position;
         this.mesh.position.copy(position);
         this.attackRadiusIndicator.position.copy(position);
     }
-
     die() {
-        if (this.isDestroyed) return; // Evita chamadas repetidas a este método
+        if (this.isDestroyed) return;
 
-        this.isDestroyed = true; // Marca a torre como destruída
-        this.scene.remove(this.mesh); // Remove a malha da torre
+        this.isDestroyed = true;
+        this.scene.remove(this.mesh);
         if (this.model) {
-            this.scene.remove(this.model); // Remove o modelo 3D da torre
+            this.scene.remove(this.model);
         }
-
-        // Remover todos os projetéis restantes
         this.projectiles.forEach(projectile => this.scene.remove(projectile.mesh));
         this.projectiles = [];
-
-        // Remover a barra de vida corretamente
         if (this.healthBarManager && typeof this.healthBarManager.dispose === 'function') {
-            this.healthBarManager.dispose(); // Usa o método de remoção/disposição correto
+            this.healthBarManager.dispose();
         }
         if (this.nameTag) {
             this.nameTag.remove();
         }
     }
-
     isClicked(worldPosition) {
         return this.mesh.geometry.boundingBox.containsPoint(worldPosition);
     }
@@ -183,7 +164,5 @@ class Tower {
             }
         }
     }
-    
 }
-
 export { Tower };

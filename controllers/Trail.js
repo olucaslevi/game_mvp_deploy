@@ -16,7 +16,7 @@ class TrailEffect {
       setTimeout(() => {
         this.scene.remove(particle);
         this.particles = this.particles.filter(p => p !== particle);
-      }, 100); // duração do rastro em milissegundos
+      }, 100);
     }
     updateTrail(position) {
       this.createParticle(position);

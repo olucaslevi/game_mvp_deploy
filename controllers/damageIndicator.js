@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-
 export class DamageIndicator {
     constructor(scene, position, damageValue) {
         this.scene = scene;
@@ -32,16 +31,14 @@ export class DamageIndicator {
         this.sprite.position.copy(this.position);
         this.sprite.position.y += 5;
         this.sprite.position.z += 3;
-
-        // Define ordem de renderização para garantir que o texto esteja na frente
-        this.sprite.renderOrder = 999; // Alta prioridade de renderização
+        this.sprite.renderOrder = 999;
 
         this.scene.add(this.sprite);
         this.animateDamageIndicator();
     }
 
     animateDamageIndicator() {
-        const duration = 1300; // Duração da animação
+        const duration = 1300;
         const moveUpDistance = 4;
         const moveUpSpeed = moveUpDistance / duration;
         const startTime = performance.now();

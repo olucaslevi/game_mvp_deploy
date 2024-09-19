@@ -1,17 +1,20 @@
-/* Estilos gerais */
 body {
     margin: 0;
-    overflow: hidden; /* Evita barra de rolagem */
+    overflow: auto;
     font-family: Arial, sans-serif;
 }
-p {
-    font-size: 28px; /* Aumenta o tamanho da fonte dos parágrafos */
-    padding: 50px;
-    line-height: 1.6; /* Melhora o espaçamento entre linhas */
-    color: #FFFFFF; /* Define uma cor branca para o texto */
-    margin: 15px 0; /* Espaçamento em cima e embaixo dos parágrafos */
-    text-shadow: 1px 1px 2px #000000; /* Adiciona uma leve sombra ao texto para dar contraste */
+* {
+    box-sizing: border-box;
 }
+
+p {
+    font-size: 2vh;
+    line-height: 1.6;
+    color: #FFFFFF;
+    margin: 15px 0;
+    text-shadow: 1px 1px 2px #000000;
+}
+
 .overlay {
     position: fixed;
     top: 0;
@@ -24,12 +27,15 @@ p {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 5; /* Mantém a tela de início e fim sobre o jogo */
+    z-index: 5;
+    padding: 5vh 5vw;
+    text-align: center;
+    overflow-y: auto; /* Para habilitar rolagem se necessário */
 }
-/* Estilo geral para os botões */
+
 button {
-    padding: 15px 30px;
-    font-size: 18px;
+    padding: 2vh 4vw;
+    font-size: 2.5vh;
     font-weight: bold;
     color: #fff;
     background: linear-gradient(135deg, #373a3b, #424242);
@@ -37,108 +43,151 @@ button {
     border-radius: 8px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    margin: 1vh auto; /* Alinhamento central com margem auto */
     transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
-    margin: 10px;
-    position: relative;
-    overflow: hidden;
 }
 
-/* Efeito de hover para os botões */
 button:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
     background: linear-gradient(135deg, #ffee00, #cc9c00);
 }
 
-/* Efeito de clique para os botões */
-button:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-/* Animação de brilho para os botões */
-button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 300%;
-    height: 300%;
-    background: rgba(255, 255, 255, 0.2);
-    transition: width 0.5s, height 0.5s, top 0.5s, left 0.5s;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Efeito de brilho quando o mouse passa sobre o botão */
-button:hover::before {
-    width: 0;
-    height: 0;
-    top: 50%;
-    left: 50%;
-}
-
-/* Estilo específico para o botão "Começar" */
 #start-button {
     background: linear-gradient(135deg, #28a745, #4caf50);
-}
-#coordenadas {
-    position: absolute;
-    bottom: -10px; /* Mantém a posição próxima do rodapé */
-    left: 50%; /* Centraliza horizontalmente */
-    transform: translateX(-50%); /* Centraliza o ponto de referência no meio da tela */
-    color: white;
-    font-size: 8px; /* Reduz ainda mais o tamanho da fonte */
-    background-color: rgba(0, 0, 0, 0.4); /* Fundo levemente transparente */
-    padding: 2px 5px; /* Reduz o espaçamento interno para deixar mais compacto */
-    border-radius: 3px; /* Bordas levemente arredondadas */
-    z-index: 10; /* Mantém o elemento acima de outros elementos */
-    text-align: center; /* Centraliza o texto */
-    display: flex; /* Define o contêiner como flexível para alinhar os itens lateralmente */
-    gap: 5px; /* Espaçamento entre as coordenadas x e y */
-    opacity: 0.7; /* Aumenta a leve transparência para contraste */
-    font-family: Arial, sans-serif; /* Define a fonte para combinar com o restante */
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    padding: 2vh 4vw;
 }
 
-
-/* Efeito de hover específico para o botão "Começar" */
 #start-button:hover {
     background: linear-gradient(135deg, #4caf50, #28a745);
 }
 
-/* Estilo específico para os botões de classe */
+.selection-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2vh;
+    margin: 5vh;
+    width: 100%;
+}
+.selected {
+    background: linear-gradient(135deg, #00ff00, #00b200); /* Cores diferentes para indicar seleção */
+    border: 2px solid #ffffff; /* Bordar para realçar a seleção */
+    box-shadow: 0 8px 20px rgba(0, 255, 0, 0.5); /* Realçar com sombra */
+    transform: scale(1.05); /* Leve aumento no tamanho */
+}
+
+#warrior-button, #archer-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2vh 4vw;
+    margin: 1vh auto;
+    background: linear-gradient(135deg, #ff4eca, #a225ad);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 2.5vh;
+}
+
+#warrior-button:hover, #archer-button:hover {
+    background: linear-gradient(135deg, #ff4eca, #a225ad);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    button {
+        font-size: 2vh;
+        padding: 1.5vh 3vw;
+    }
+
+    #start-button {
+        padding: 2vh 4vw;
+    }
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 480px) {
+    p {
+        font-size: 3vh;
+    }
+
+    button {
+        font-size: 2.5vh;
+        padding: 1.5vh 3vw;
+    }
+}
+#coordenadas {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 8px;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 2px 5px;
+    border-radius: 3px;
+    z-index: 10;
+    text-align: center;
+    display: flex;
+    gap: 5px;
+    opacity: 0.7;
+    font-family: Arial, sans-serif;
+}
+
+.selection-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 5vh;
+}
+
 #warrior-button, #archer-button {
     background: linear-gradient(135deg, #ff4eca, #a225ad);
 }
 
-/* Efeito de hover específico para os botões de classe */
 #warrior-button:hover, #archer-button:hover {
     background: linear-gradient(135deg, #ff4eca, #a225ad);
 }
 
 #gui-container {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    pointer-events: none; /* GUI não interfere nos cliques do jogo */
-    z-index: 10; /* Mantém a GUI sobre o canvas do jogo */
+    pointer-events: none;
+    z-index: 10;
 }
 
 #timer {
-    font-size: 70px;
+    font-size: 5vh;
     color: rgb(255, 255, 255);
     font-weight: bold;
     margin: 40px auto 0;
     pointer-events: none;
     opacity: 0.8;
 }
+
+#warning {
+    font-size: 3vh;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    margin: auto 90px 50px;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
 #target-indicator {
-    font-size: 20px;
+    font-size: 2vh;
     color: rgb(255, 255, 255);
     font-weight: bold;
     margin: 40px auto 0;
@@ -147,8 +196,8 @@ button:hover::before {
 }
 
 #health-bar-container {
-    width: 400px;
-    height: 40px;
+    width: 30vw;
+    height: 4vh;
     background-color: rgba(128, 128, 128, 0.5);
     border-radius: 5px;
     overflow: hidden;
@@ -167,29 +216,32 @@ button:hover::before {
 
 #button {
     position: absolute;
-    bottom: 80px;
-    right: 100px;
-    padding: 60px;
+    bottom: 8vh;
+    right: 5vw;
+    padding: 2vh 4vw;
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     border: none;
     cursor: pointer;
-    pointer-events: auto; /* Permite que o botão seja clicável */
+    pointer-events: auto;
 }
+
 #blue-team-kills-container, #red-team-kills-container {
-    font-size: 30px;
+    font-size: 3vh;
     color: rgb(255, 255, 255);
     font-weight: bold;
-    margin-top: 20px;
-    padding: 10px;
+    margin-top: 2vh;
+    padding: 1vh;
     pointer-events: none;
     opacity: 0.8;
     position: absolute;
 }
 
 #blue-team-kills-container {
-    left: 20px; /* Posiciona o Blue Team Kills no lado esquerdo */
+    left: 2vw;
 }
+
 #red-team-kills-container {
-    right: 20px; /* Posiciona o Red Team Kills no lado direito */
+    right: 2vw;
 }
+

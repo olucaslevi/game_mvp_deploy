@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 class ModelController {
-    constructor(scene,glowMaterial) {
+    constructor(scene,modelType) {
         this.scene = scene;
         this.loader = new GLTFLoader();
         this.animations = {};
+        this.modelType = modelType;
     }
     loadModel(url, position, rotation, scale, color, callback) {
         this.loader.load(
@@ -39,7 +40,11 @@ class ModelController {
         if (!model || !model.userData.mixer) {
             return;
         }
-        const mixer = model.userData.mixer;
+        if (model.userData.isDead) {
+            console.warn(`Tentativa de reproduzir animação em um modelo de soldado morto: ${model.name}`);
+            return;
+        }
+            const mixer = model.userData.mixer;
         const animation = model.userData.animations[animationName];
         if (animation) {
             if (model.userData.activeAction instanceof THREE.AnimationAction) {
@@ -49,11 +54,10 @@ class ModelController {
             action.setEffectiveTimeScale(speed);
             action.setDuration(duration);
             action.setEffectiveWeight(1);
-    
-            action.play();
+                action.play();
             model.userData.activeAction = action;
         } else {
-            console.warn(`Animation "${animationName}" not found`);
+            console.warn(`Animation "${animationName}" not found for model: ${model.name}`);
         }
     }
     stopAnimation(model, animationName) {
@@ -72,22 +76,28 @@ class ModelController {
         }
     }
     createSoldier(position, color, callback) {
-        const url = './models/lagarto.glb';
+        const url = this.modelType === 'AI' ? './models/lagarto.glb' : './models/lagartoManual.glb';
         const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 0.06;
         this.loadModel(url, position, rotation, scale, color, callback);
     }
     createTower(position, color, callback) {
-        const url = './models/tower.glb';
-        const rotation = new THREE.Vector3(1, 0, 0);
+        const url = this.modelType === 'AI' ? './models/towerIA.glb' : './models/tower.glb';
+        const rotation = new THREE.Vector3(0, 0, 0);
         const scale = 1;
         this.loadModel(url, position, rotation, scale, color, callback);
     }
-    createProjectile(position, color, callback) {
-        // const url = './../banana.glb';
-        // const rotation = new THREE.Vector3(0, 0, 0);
-        // const scale = 0.8;
-        // this.loadModel(url, position, rotation, scale, color, callback);
+    createWarrior(position, callback) {
+        const url = this.modelType === 'AI' ? './models/warrior.glb' : './models/warriorManual.glb';
+        const rotation = new THREE.Vector3(0, 0, 0);
+        const scale = 0.06;
+        this.loadModel(url, position, rotation, scale, null, callback);
+    }
+    createArcher(position, callback) {
+        const url = this.modelType === 'AI' ? './models/archer.glb' : './models/archerManual.glb';
+        const rotation = new THREE.Vector3(0, 0, 0);
+        const scale = 0.06;
+        this.loadModel(url, position, rotation, scale, null, callback);
     }
     createTerrain(callback) {
         const url = './models/terrain.glb';
@@ -96,20 +106,26 @@ class ModelController {
         const scale = 2;
         this.loadModel(url, position, rotation, scale, null, callback);
     }
-    createWarrior(position, callback) {
-        const url = './models/warrior.glb';
-        const rotation = new THREE.Vector3(0, 0, 0);
-        const scale = 0.06;
-        this.loadModel(url, position, rotation, scale, null, callback);
-    }
-    createArcher(position, callback) {
-        const url = './models/archer.glb';
-        const rotation = new THREE.Vector3(0, 0, 0);
-        const scale = 0.06;
-        this.loadModel(url, position, rotation, scale, null, callback);
-    }
     removeModel(model) {
+        if (!model) return;
+    
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.geometry.dispose();
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((material) => material.dispose());
+                } else {
+                    child.material.dispose();
+                }
+            }
+            if (child.userData.mixer) {
+                child.userData.mixer.stopAllAction(); // Para todas as animações
+                child.userData.mixer = null; // Remove o mixer
+            }
+        });
+    
         this.scene.remove(model);
+        model = null; // Libera a referência ao modelo para o coletor de lixo
     }
     getAnimationDuration(model, animationName) {
         if (!model) {
@@ -124,29 +140,50 @@ class ModelController {
         }
     }
     switchModel(currentModel, newUrl, callback) {
-        // Remove o modelo atual da cena
-        if (currentModel) {
-            this.scene.remove(currentModel);
+        if (!currentModel) {
+            console.warn('No current model to switch from.');
+            return;
         }
-    
-        // Carrega o novo modelo
-        this.loadModel(newUrl, currentModel.position, currentModel.rotation, currentModel.scale.x, null, (newModel) => {
-            // Define o novo modelo como ativo
-            newModel.position.copy(currentModel.position);
-            newModel.rotation.copy(currentModel.rotation);
-            newModel.scale.copy(currentModel.scale);
-    
-            // Adiciona o novo modelo na cena
+        const currentPosition = currentModel.position.clone();
+        const currentRotation = currentModel.rotation.clone();
+        const currentScale = currentModel.scale.clone();
+        this.disposeModel(currentModel);
+        this.loadModel(newUrl, currentPosition, currentRotation, currentScale.x, null, (newModel) => {
+            if (currentModel.userData.isDead) {
+                console.warn('O modelo atual pertence a um soldado que já foi morto. Ignorando a troca.');
+                return;
+            }
+            newModel.position.copy(currentPosition);
+            newModel.rotation.copy(currentRotation);
+            newModel.scale.copy(currentScale);
             this.scene.add(newModel);
-    
-            // Toca a animação "Walk" no novo modelo
-            this.playAnimation(newModel, 'Walk', 1, 2); // Inicia a animação "Walk"
-    
-            // Chama o callback para atualizar a referência do modelo
+            this.playAnimation(newModel, 'Walk', 1, 2);
             if (callback) callback(newModel);
         });
     }
+    disposeModel(model) {
+        if (!model) return;
     
+        // Remove o modelo da cena
+        this.scene.remove(model);
+    
+        // Percorre os componentes do modelo para liberar memória
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.geometry.dispose();
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((mat) => mat.dispose());
+                } else {
+                    child.material.dispose();
+                }
+            }
+            if (child.userData.mixer) {
+                child.userData.mixer.stopAllAction(); // Para todas as animações
+                child.userData.mixer = null; // Remove o mixer
+            }
+        });
+        model = null; // Remove a referência ao modelo
+    }
     update(delta) {
         this.scene.children.forEach(child => {
             if (child.userData.mixer) {

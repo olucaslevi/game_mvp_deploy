@@ -4,9 +4,8 @@ import ModelController from './modelController';
 import { DamageIndicator } from './damageIndicator';
 import NameTag from './nameTag';
 import CameraController from './cameraManager';
-
 class Player {
-    constructor(scene, position, camera, renderer, team, cameraController) {
+    constructor(scene, position, camera, renderer, team) {
         this.scene = scene;
         this.position = position;
         this.team = team;
@@ -17,7 +16,8 @@ class Player {
         this.healthPoints = 300;
         this.damage = 10;
         this.camera = camera;
-        this.cameraController = new CameraController(this.camera, this.targetPosition);
+        this.currentModelType = 'AI';
+        this.cameraController = new CameraController(this.camera, () => this);
         this.renderer = renderer;
         this.attackRange = 2;
         this.target = null;
@@ -40,6 +40,18 @@ class Player {
         this.updateDestinationIndicator(position);
         if (target) {
             this.target = target;
+        }
+    }
+ 
+    move(movementDirection) {
+        this.mesh.position.add(movementDirection);
+        if (movementDirection.lengthSq() > 0) {
+            const targetRotationY = Math.atan2(movementDirection.x, movementDirection.z);
+            this.mesh.rotation.set(0, targetRotationY, 0);
+        }
+        if (this.model) {
+            this.model.position.copy(this.mesh.position);
+            this.model.rotation.copy(this.mesh.rotation);
         }
     }
     updateDestinationIndicator(position) {
@@ -66,7 +78,6 @@ class Player {
                 this.destinationIndicator.material.dispose();
                 this.destinationIndicator = null;
             }
-            this.scene.remove(pointLight);
         }, 1000);
     }
     createMesh() {
@@ -132,13 +143,11 @@ class Player {
         if (this.targetPosition !== null && this.mesh.position.distanceTo(this.targetPosition) > 0.8) {
             if (!this.isMoving) {
                 this.isMoving = true;
-                // Toca a animação "Walk" se o modelo estiver definido
                 if (this.model && this.modelController) {
                     this.modelController.playAnimation(this.model, 'Walk',2,2);
                 }
             }
         } else if (this.isMoving) {
-            // Quando o jogador chega ao destino, para a animação de "Walk" e inicia "Idle"
             this.isMoving = false;
             this.targetPosition = null;
             if (this.modelController) {
@@ -166,7 +175,6 @@ class Player {
                 }
                 return;
             }
-    
             const distanceToTarget = this.mesh.position.distanceTo(this.target.mesh.position);
             if (distanceToTarget <= this.attackRange) {
                 if (this.cooldown <= 0) {
@@ -206,17 +214,23 @@ class Player {
     getTeam() {
         return this.team;
     }
+    setPosition(position) {
+        this.mesh.position.copy(position);
+        if (this.model) {
+            this.model.position.copy(position);
+        }
+    }
+    getPosition() {
+        return this.mesh.position.clone();
+    }
+    
     setTarget(target) {
         const targetIndicator = document.getElementById('target-indicator');
     
         if (target && target.isAlive() && target.getTeam() !== this.team) {
             this.target = target;
             this.lookAtTarget(target);
-    
-            // Atualiza o indicador de target na GUI
             targetIndicator.textContent = `Target: ${target.name || 'Desconhecido'}`;
-    
-            // Muda a cor do target para indicar que foi selecionado
             this.highlightTarget(target);
     
             const distanceToTarget = this.mesh.position.distanceTo(target.position);
@@ -226,11 +240,10 @@ class Player {
                 this.targetPosition = null;
             }
         } else {
-            // Se o target for nulo ou inválido
-            this.removeHighlightFromTarget(); // Remove o destaque do target anterior
+            this.removeHighlightFromTarget();
             this.target = null;
             this.targetPosition = null;
-            targetIndicator.textContent = "Target: Nenhum"; // Reseta o indicador de target
+            targetIndicator.textContent = "Target: Nenhum";
         }
     }
     
@@ -238,13 +251,10 @@ class Player {
         if (target && target.model) {
             target.model.traverse((child) => {
                 if (child.isMesh) {
-                    // Armazena a cor original do material
                     child.userData.originalColor = child.material.color.getHex();
-    
-                    // Define a cor para um amarelo mais forte
-                    child.material.color.setHex(0xFFFF00); // Amarelo forte e chapado
-                    child.material.emissive = new THREE.Color(0xFFFF00); // Emissivo em amarelo para maior brilho
-                    child.material.emissiveIntensity = 0.8; // Ajuste de intensidade para destacar o brilho
+                    child.material.color.setHex(0xFFFF00);
+                    child.material.emissive = new THREE.Color(0xFFFF00);
+                    child.material.emissiveIntensity = 0.8;
                 }
             });
         }
@@ -253,10 +263,10 @@ class Player {
         if (this.target && this.target.model) {
             this.target.model.traverse((child) => {
                 if (child.isMesh && child.userData.originalColor !== undefined) {
-                    child.material.color.setHex(child.userData.originalColor); // Restaura a cor original
-                    child.material.emissive = new THREE.Color(0x000000); // Remove o efeito emissivo
-                    child.material.emissiveIntensity = 0; // Remove a intensidade emissiva
-                    delete child.userData.originalColor; // Remove o dado de usuário
+                    child.material.color.setHex(child.userData.originalColor);
+                    child.material.emissive = new THREE.Color(0x000000);
+                    child.material.emissiveIntensity = 0;
+                    delete child.userData.originalColor;
                 }
             });
         }
@@ -278,11 +288,12 @@ class Player {
     }
 }
 class Warrior extends Player {
-    constructor(scene, position, camera, renderer, team) {
-        super(scene, position, camera, renderer, team);
+    constructor(scene, position, camera, renderer, team, cameraController, modelType) {
+        super(scene, position, camera, renderer, team, cameraController);
         this.attackRange = 8;
         this.damage = 20;
-        this.modelController = new ModelController(this.scene)
+        this.modelType = modelType;
+        this.modelController = new ModelController(this.scene, modelType);
         this.modelController.createWarrior(this.position,(model) => {
             this.model = model;
             this.modelController.playAnimation(this.model, 'Idle', 10, 7);
@@ -299,6 +310,7 @@ class Warrior extends Player {
         if (distance <= this.attackRange) {
             target.takeDamage(this.damage);
             this.isAttacking = true;
+            this.modelController.stopAnimation(this.model, 'Walk');
             this.modelController.playAnimation(this.model, 'Attack',3,2);
         } else {
             this.isAttacking = false;
@@ -308,12 +320,13 @@ class Warrior extends Player {
     }
 }
 class Archer extends Player {
-    constructor(scene, position, camera, renderer, team) {
-        super(scene, position, camera, renderer, team);
+    constructor(scene, position, camera, renderer, team, cameraController, modelType) {
+        super(scene, position, camera, renderer, team, cameraController);
         this.attackRange = 26;
         this.damage = 12;
         this.projectiles = [];
-        this.modelController = new ModelController(this.scene);
+        this.modelType = modelType;
+        this.modelController = new ModelController(this.scene, modelType);
         this.modelController.createArcher(this.position, (model) => {
             this.model = model;
             this.modelController.playAnimation(this.model, 'Idle', 10, 7);
@@ -329,7 +342,8 @@ class Archer extends Player {
         const distance = this.mesh.position.distanceTo(target.getPosition());
         if (distance <= this.attackRange) {
             this.isAttacking = true;
-            this.modelController.playAnimation(this.model, 'Attack', 1, 4);
+            this.modelController.stopAnimation(this.model,'Walk');
+            this.modelController.playAnimation(this.model, 'Attack',3, 4);
             this.shootArrow(target);
             setTimeout(() => {
                 this.isAttacking = false;
@@ -340,53 +354,42 @@ class Archer extends Player {
         }
         this.cooldown = 60;
     }
-
     shootArrow(target) {
-        // Cria a geometria da flecha
         const arrowGeometry = new THREE.CylinderGeometry(0.1, 0.3, 4, 12);
-    
-        // Cria o material da flecha com configuração ajustada
         const arrowMaterial = new THREE.MeshBasicMaterial({
-            color: 'yellow', // Cor marrom
-            transparent: true, // Permite a transparência se necessário
-            opacity: 0.8, // Totalmente opaco
-            depthTest: true, // Habilita o teste de profundidade
-            depthWrite: true, // Habilita a escrita de profundidade
+            color: 'yellow',
+            transparent: true,
+            opacity: 0.8,
+            depthTest: true,
+            depthWrite: true,
         });
-    
         const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-    
-        // Defina um renderOrder alto para garantir que a flecha seja renderizada depois do terreno
-        arrow.renderOrder = 10; // Defina um valor alto para garantir que a flecha seja renderizada por último
-    
-        // Ajuste a posição da flecha
+        arrow.renderOrder = 10;
         arrow.position.copy(this.mesh.position);
-        arrow.position.y += 1; // Eleve a flecha acima da posição inicial
-    
-        // Define a direção da flecha
+        arrow.position.y += 1;
+        arrow.position.z = 2.9;
         const arrowDirection = new THREE.Vector3().subVectors(target.getPosition(), this.mesh.position).normalize();
         const axis = new THREE.Vector3(0, 1, 0);
         const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, arrowDirection);
         arrow.applyQuaternion(quaternion);
-    
-        // Adiciona a flecha na cena
         this.scene.add(arrow);
         this.projectiles.push(arrow);
-    
-        // Armazene dados de usuário para manipulação da flecha
         arrow.userData = { target, direction: arrowDirection, speed: 0.5 };
     }
-    
-
     updateProjectiles() {
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const arrow = this.projectiles[i];
             arrow.position.add(arrow.userData.direction.clone().multiplyScalar(arrow.userData.speed));
+            arrow.position.z = 2.9;
             const arrowDirection = arrow.userData.direction.clone();
             const axis = new THREE.Vector3(0, 1, 0);
             const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, arrowDirection);
             arrow.setRotationFromQuaternion(quaternion);
-            const distanceToTarget = arrow.position.distanceTo(arrow.userData.target.getPosition());
+            const arrowPosition2D = arrow.position.clone();
+            const targetPosition2D = arrow.userData.target.getPosition().clone();
+            arrowPosition2D.z = 0;
+            targetPosition2D.z = 0;
+            const distanceToTarget = arrowPosition2D.distanceTo(targetPosition2D);
             if (distanceToTarget <= 1) {
                 arrow.userData.target.takeDamage(this.damage);
                 this.scene.remove(arrow);
@@ -394,13 +397,22 @@ class Archer extends Player {
             }
         }
     }
-
+    move(movementDirection) {
+        this.mesh.position.add(movementDirection);
+        if (movementDirection.lengthSq() > 0) {
+            const targetRotationY = Math.atan2(movementDirection.x, movementDirection.z);
+            this.mesh.rotation.set(0, targetRotationY, 0);
+        }
+        if (this.model) {
+            this.model.position.copy(this.mesh.position);
+            this.model.rotation.copy(this.mesh.rotation);
+        }
+    }
     update(delta) {
         if (this.target) {
             if (!this.target.isAlive()) {
-                this.removeHighlightFromTarget(); // Remove destaque se o target morrer
+                this.removeHighlightFromTarget();
                 this.target = null;
-                // Atualiza a GUI
                 const targetIndicator = document.getElementById('target-indicator');
                 targetIndicator.textContent = "Target: Nenhum";
             }
@@ -412,6 +424,4 @@ class Archer extends Player {
         this.updateProjectiles();
     }
 }
-
-
 export { Player, Warrior, Archer };

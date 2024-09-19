@@ -5,12 +5,13 @@ import { DamageIndicator } from './damageIndicator';
 import NameTag from './nameTag';
 
 class Soldier {
-    constructor(scene, position,target, attackRadius = 0.4,followRadius = 6, moveSpeed = 0.1, cooldown = 100, healthPoints = 100, damage = 10, team='blue', gameGUI) {  
+    constructor(scene, position,target, attackRadius = 0.4,followRadius = 6, moveSpeed = 0.1, cooldown = 100, healthPoints = 100, damage = 10, team='blue', gameGUI, modelType) {  
         this.scene = scene;
         this.position = position;
         this.target = target;
         this.healthPoints = 100;
         this.team = team;
+        this.modelType = modelType;
         this.mesh = this.createMesh();
         this.scene.add(this.mesh);
         this.attackRadius = attackRadius;
@@ -25,7 +26,7 @@ class Soldier {
         this.model = null;
         this.isDead = false;
         this.currentModelState = 'AI';
-        this.modelController = new ModelController(this.scene);
+        this.modelController = new ModelController(this.scene,this.modelType);
         this.modelController.createSoldier(this.position, this.team, model => {
             this.model = model;
             this.modelController.playAnimation(this.model, 'Walk', 1, 2);
@@ -33,7 +34,6 @@ class Soldier {
         this.gameGUI = gameGUI;
         this.name = "Soldado";
         this.nameTag = new NameTag(scene, this.mesh, "Soldado");
-        console.log('GameGUI passed to Soldier:', gameGUI);
     }
     update(players, soldiers, towers) {
         if (this.nameTag) {
@@ -139,18 +139,17 @@ class Soldier {
             return;
         }
         if (target.isAlive() && target.getTeam() !== this.team) {
-            // Verifica se o alvo é uma torre
             if (typeof target.takeDamage === 'function') {
-                target.takeDamage(this.damage); // Aplica o dano à torre
+                target.takeDamage(this.damage);
             } else {
-                target.takeDamage(this.damage, this.position); // Aplica o dano a jogadores e soldados
+                target.takeDamage(this.damage, this.position);
             }
     
             this.isAttacking = true;
-            this.modelController.playAnimation(this.model, 'Attack', 3, 2.5); // Animação de ataque
+            this.modelController.playAnimation(this.model, 'Attack', 3, 2.5);
             const attackDuration = this.modelController.getAnimationDuration(this.model, 'Attack');
             setTimeout(() => {
-                this.isAttacking = false; // Define que o ataque terminou
+                this.isAttacking = false;
                 if (this.isAlive() && this.target === target && target.isAlive()) {
                     this.modelController.playAnimation(this.model, 'Idle', 1, 1);
                 } else {
@@ -158,7 +157,7 @@ class Soldier {
                     this.modelController.playAnimation(this.model, 'Walk', 1, 1);
                     this.unsetTarget();
                 }
-            }, attackDuration * 1000); // Corrigido para multiplicar por 1000 para milissegundos
+            }, attackDuration * 1000);
         } else {
             this.modelController.stopAnimation(this.model, 'Attack', 1, 1);
             this.modelController.playAnimation(this.model, 'Dead', 5,3);
@@ -208,9 +207,8 @@ class Soldier {
     moveTowardsNearestEnemyTower(towers) {
         let nearestTower = null;
         let shortestDistance = Infinity;
-        // Procurar a torre inimiga mais próxima que ainda está viva
         for (const tower of towers) {
-            if (tower.isAlive() && tower.getTeam() !== this.getTeam()) { // Verifica se a torre está viva e pertence ao time inimigo
+            if (tower.isAlive() && tower.getTeam() !== this.getTeam()) {
                 const distanceToTower = this.position.distanceTo(tower.getPosition());
                 if (distanceToTower < shortestDistance) {
                     nearestTower = tower;
@@ -235,36 +233,27 @@ class Soldier {
         this.healthBarManager.update();
         new DamageIndicator(this.scene, this.position, amount);
         this.handleDamageEffect();
-    
         if (this.healthPoints <= 0) {
             this.die();
             return;
         }
-    
-        // Tocar a animação de hit
         this.modelController.playAnimation(this.model, 'Hit', 1, 2); 
-    
-        // Espera um tempo para tocar a animação de hit e depois volta para a animação de caminhada
         setTimeout(() => {
-            if (this.isAlive()) { // Verifica se o soldado ainda está vivo
+            if (this.isAlive()) {
                 this.modelController.playAnimation(this.model, 'Walk', 1, 1);
             }
-        }, 500); // 500ms é o tempo da animação de hit, ajuste conforme necessário
+        }, 500);
     }
-    
     onDeath() {
-        console.log(`Soldier from team ${this.team} died.`);
-        console.log(`Game GUI: ${this.gameGUI}`); // Verifica se gameGUI está definido
-    
         this.modelController.playAnimation(this.model, 'Dead', 5, 5);
         setTimeout(() => {
             this.scene.remove(this.mesh);
             if (this.model) {
-                this.modelController.removeModel(this.model);
+                this.modelController.disposeModel(this.model);
+                this.model = null;
             }
     
             if (this.gameGUI) {
-                console.log(`Updating kill count for team ${this.team === 'blue' ? 'red' : 'blue'}.`);
                 if (this.team === 'blue') {
                     this.gameGUI.updateKillCount('red'); 
                 } else {
@@ -276,9 +265,9 @@ class Soldier {
                 this.nameTag.remove();
                 this.nameTag = null;
             }
+            this.isDead = true;
         }, 1000);
-    }
-    
+    } 
     die() {
         this.onDeath();
     }
@@ -306,12 +295,10 @@ class Soldier {
     }
     updateModelPosition() {
         if (this.model && this.model.position && this.mesh) {
-            // Copia a posição do mesh para o modelo
             this.model.position.copy(this.mesh.position);
             this.model.rotation.copy(this.mesh.rotation);
             this.model.rotation.y = 0;
         }
     }   
 }
-
 export default Soldier;

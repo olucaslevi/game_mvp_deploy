@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import ModelController from './modelController';
 import TrailEffect from './Trail';
-
 export class Projectile {
     constructor(scene, position, target, speed = 20, towers, damage) {
         this.scene = scene;
@@ -20,12 +19,6 @@ export class Projectile {
         this.scene.add(this.mesh);
         this.model = null;
         this.modelController = new ModelController(this.scene);
-        this.modelController.createProjectile(this.position, this.target, model => {
-            this.model = model;
-            if (this.model) {
-                this.model.position.copy(this.position);
-            }
-        });
     }
     update() {
         if (!this.target) {

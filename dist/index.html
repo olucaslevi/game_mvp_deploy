@@ -3,53 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game</title>
-  <script type="module" crossorigin src="/game_mvp_deploy/assets/index-DlboytRx.js"></script>
-  <link rel="stylesheet" crossorigin href="/game_mvp_deploy/assets/index-CXOhIwuk.css">
+    <title>Protótipo de Jogo</title>
+  <script type="module" crossorigin src="/game_mvp_deploy/assets/index-mjGT5NMM.js"></script>
+  <link rel="stylesheet" crossorigin href="/game_mvp_deploy/assets/index-J7g9r20s.css">
 </head>
 <body>
-    <!-- Tela de início -->
-    <div id="start-screen" class="overlay">
-        <h1>Bem Vindo !!</h1>
-        <h3>As torres gerarão tropas. Divirta-se ! Caso haja qualquer problema em visualizar este protótipo jogável, você pode ver a demonstração das animações aqui: 
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">link</a> 
-        </h3>
-        <p>
-            Clique no mapa para movimentar seu jogador e nos inimigos para atacá-los. Você poderá visualizar as animações desenvolvidas abaixo. 
-            <br/>Não esqueça de clicar neste 
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">formulário</a> 
-            para preencher com base na sua experiência com esse protótipo.
-        </p>
-        <div>Escolha uma especialidade:</div>
-        <button id="warrior-button">Guerreiro</button>
-        <button id="archer-button">Arqueiro</button>
-        <div id="error-message" style="color: red; display: none;">Você deve escolher uma classe!</div>
-        <button id="start-button">Começar</button>
+<!-- Tela de início -->
+<div id="start-screen" class="overlay">
+    <h1>Bem Vindo.</h1>
+    <h3>
+        As torres gerarão tropas. Você pode clicar no terreno para onde o personagem deve ir,
+        ou pode clicar, segurar e arrastar para guiar o personagem com o mouse. <br/><br/>
+        Inimigos irão atacá-lo como prioridade, cuidado. Mas suas torres também gerarão aliados. <br/>
+        Divirta-se!
+    </h3>
+    
+    <p>
+        Não esqueça de clicar neste 
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfnFRwVn5BXLUdwToalBaPYQsYEbDEVKppxtpuVha-gizHvYg/viewform" target="_blank" class="form-link">formulário</a>. 
+        Você deve preenchê-lo com base na sua experiência aqui. <br/>
+        Muito Obrigado!
+    </p>
+
+    <div class="selection-group">
+        <div class="specialty-selection">
+            <p>Escolha uma especialidade:</p>
+            <button id="warrior-button">Guerreiro</button>
+            <button id="archer-button">Arqueiro</button>
+        </div>
+
+        <div class="model-selection">
+            <p>Escolha o tipo de modelo:</p>
+            <button id="ai-model-button">Modelo IA</button>
+            <button id="manual-model-button">Modelo Manual</button>
+        </div>
     </div>
-    <!-- Tela de fim de jogo -->
-    <div id="end-screen" class="overlay">
-        <h1>Game Over</h1>
-        <p id="end-message"></p>
-        <button id="restart-button">Restart Game</button>
+
+    <div id="error-message" style="color: red; display: none;">
+        Você deve escolher uma classe e o tipo de modelo!
     </div>
-    <!-- GUI do jogo -->
-    <div id="gui-container">
-        <div id="coordenadas">
-            <p>x: <span id="coord-x">0</span></p>
-            <p>y: <span id="coord-y">0</span></p>
-        </div>    
-        <div id="timer">03:00</div>    
-        <div id="target-indicator">Target: Nenhum</div>
-        <div id="health-bar-container">
-            <div id="health-bar"></div>
-        </div>
-        <div id="blue-team-kills-container">
-            <p>Pontos (Time Azul): <span id="blue-team-kills">0</span></p>
-        </div>
-        <div id="red-team-kills-container">
-            <p>Pontos (Time Vermelho): <span id="red-team-kills">0</span></p>
-        </div>
-        <button id="button">Mudar modelos (IA e manual)</button>
-    </div>
+
+    <button id="start-button">Começar</button>
+</div>
+
+<!-- Tela de fim de jogo -->
+<div id="end-screen" class="overlay">
+    <h1>Game Over</h1>
+    <p id="end-message"></p>
+    <button id="restart-button">Restart Game</button>
+</div>
+
+<!-- GUI do jogo -->
+<div id="gui-container">
+    <div id="coordenadas">
+        <p>x: <span id="coord-x">0</span></p>
+        <p>y: <span id="coord-y">0</span></p>
+    </div>    
+    <div id="timer">03:00</div>    
+    <div id="target-indicator">Target: Nenhum</div>
+    <div id="warning">Pressione C para alternar para câmera em primeira pessoa!</div>
+    <div id="health-bar-container">
+        <div id="health-bar"></div>
+    </div>
+    <div id="blue-team-kills-container">
+        <p>Pontos (Time Azul): <span id="blue-team-kills">0</span></p>
+    </div>
+    <div id="red-team-kills-container">
+        <p>Pontos (Time Vermelho): <span id="red-team-kills">0</span></p>
+    </div>
+    <button id="button">Mudar modelos (clique e aguarde)</button>
+</div>
 </body>
 </html>

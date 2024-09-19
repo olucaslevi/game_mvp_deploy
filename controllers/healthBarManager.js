@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-
 export class HealthBarManager {
     constructor(object, camera, renderer) {
         this.object = object;
@@ -30,7 +29,6 @@ export class HealthBarManager {
     }
     updateSpriteRotation() {
         const offset = 13;
-        // use offset
         this.sprite.rotation.y = this.camera.rotation.y + offset;
         this.sprite.rotation.x = this.camera.rotation.x + offset;
         this.sprite.rotation.z = this.camera.rotation.z + offset;
@@ -67,5 +65,4 @@ export class HealthBarManager {
         this.canvas.remove();	
     }
 }
-
 export default HealthBarManager;
